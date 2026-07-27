@@ -1,0 +1,47 @@
+#!/bin/bash
+set -euo pipefail
+[ -f /etc/default/science-assistant ] && . /etc/default/science-assistant
+USER_NAME="${SCIENCE_ASSISTANT_USER:-scasuser}"
+GROUP_NAME="${SCIENCE_ASSISTANT_GROUP:-scasgrp}"
+CONFIG_DIR="${SCIENCE_ASSISTANT_CONFIG_DIR:-/etc/science-assistant}"
+DATA_DIR="${SCIENCE_ASSISTANT_DATA_DIR:-/var/science-assistant/data}"
+LOG_DIR="${SCIENCE_ASSISTANT_LOG_DIR:-/var/log/science-assistant}"
+if ! getent group "$GROUP_NAME" >/dev/null; then addgroup --system "$GROUP_NAME"; fi
+if ! id "$USER_NAME" >/dev/null 2>&1; then adduser --system --ingroup "$GROUP_NAME" --home /var/science-assistant/home --shell /usr/sbin/nologin "$USER_NAME"; fi
+install -d -o root -g "$GROUP_NAME" -m 0750 "$CONFIG_DIR" "$CONFIG_DIR/mtls"
+install -d -o "$USER_NAME" -g "$GROUP_NAME" -m 0750 /var/science-assistant "$DATA_DIR" /var/science-assistant/home "$LOG_DIR"
+if [ ! -f "$CONFIG_DIR/science-assistant.json" ]; then
+  install -o root -g "$GROUP_NAME" -m 0640 /usr/share/science-assistant/science-assistant.json.template "$CONFIG_DIR/science-assistant.json"
+  uuid="$(python3 -c 'import uuid; print(uuid.uuid4())')"
+  sed -i "s/REPLACE_ON_INSTALL/${uuid}/g" "$CONFIG_DIR/science-assistant.json"
+fi
+/usr/lib/science-assistant/ensure-mtls-certificates.sh "$CONFIG_DIR/mtls" "$GROUP_NAME" || true
+CLIENT_RELEASE_DIR="$DATA_DIR/releases/science-assistant-client"
+install -d -o "$USER_NAME" -g "$GROUP_NAME" -m 0750 "$CLIENT_RELEASE_DIR"
+find "$CLIENT_RELEASE_DIR" -mindepth 1 -maxdepth 1 -type f -delete
+if compgen -G "/usr/share/science-assistant/client/*" >/dev/null; then
+  cp -f /usr/share/science-assistant/client/* "$CLIENT_RELEASE_DIR/"
+  chown -R "$USER_NAME:$GROUP_NAME" "$CLIENT_RELEASE_DIR"
+  find "$CLIENT_RELEASE_DIR" -type f -exec chmod 0644 {} +
+fi
+AGENT_RELEASE_DIR="$DATA_DIR/releases/science-assistant-agent"
+install -d -o "$USER_NAME" -g "$GROUP_NAME" -m 0750 "$AGENT_RELEASE_DIR"
+find "$AGENT_RELEASE_DIR" -mindepth 1 -maxdepth 1 -type f -delete
+if compgen -G "/usr/share/science-assistant/agent/*" >/dev/null; then
+  cp -f /usr/share/science-assistant/agent/* "$AGENT_RELEASE_DIR/"
+  chown -R "$USER_NAME:$GROUP_NAME" "$AGENT_RELEASE_DIR"
+  find "$AGENT_RELEASE_DIR" -type f -exec chmod 0644 {} +
+  [ ! -f "$AGENT_RELEASE_DIR/mcp_file_parts.py" ] || chmod 0755 "$AGENT_RELEASE_DIR/mcp_file_parts.py"
+fi
+chown -R "$USER_NAME:$GROUP_NAME" /var/science-assistant "$LOG_DIR"
+chown -R root:"$GROUP_NAME" "$CONFIG_DIR"
+find "$CONFIG_DIR" -type d -exec chmod 0750 {} +
+find "$CONFIG_DIR" -type f -exec chmod 0640 {} +
+systemctl daemon-reload
+systemctl enable science-assistant-docker.service >/dev/null 2>&1 || true
+if [ -f "$CONFIG_DIR/mtls/server.crt" ] && [ -f "$CONFIG_DIR/mtls/client.crt" ]; then
+  systemctl restart science-assistant-docker.service || true
+else
+  echo "Science Assistant installed; add mTLS files under $CONFIG_DIR/mtls before starting." >&2
+fi
+science-assistant-info || true

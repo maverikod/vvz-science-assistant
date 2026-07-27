@@ -1,0 +1,5 @@
+#!/bin/bash
+set -e
+systemctl stop science-assistant-docker.service 2>/dev/null || true
+systemctl disable science-assistant-docker.service 2>/dev/null || true
+/usr/lib/science-assistant/docker-run.sh stop 2>/dev/null || true

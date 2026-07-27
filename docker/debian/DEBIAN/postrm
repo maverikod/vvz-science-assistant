@@ -1,0 +1,6 @@
+#!/bin/bash
+set -e
+if [ "${1:-}" = purge ]; then
+  systemctl daemon-reload || true
+  echo "Persistent data retained under /var/science-assistant and /var/log/science-assistant."
+fi

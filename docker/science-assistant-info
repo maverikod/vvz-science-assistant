@@ -1,0 +1,28 @@
+#!/bin/bash
+set -euo pipefail
+[ -f /etc/default/science-assistant ] && . /etc/default/science-assistant
+USER_NAME="${SCIENCE_ASSISTANT_USER:-scasuser}"
+GROUP_NAME="${SCIENCE_ASSISTANT_GROUP:-scasgrp}"
+CONTAINER="${SCIENCE_ASSISTANT_CONTAINER:-science-assistant}"
+HOST_PORT="${SCIENCE_ASSISTANT_HOST_PORT:-18180}"
+CONTAINER_PORT="${SCIENCE_ASSISTANT_CONTAINER_PORT:-18180}"
+echo "Science Assistant"
+echo "  package user:      ${USER_NAME}:${GROUP_NAME}"
+echo "  uid/gid:           $(id -u "$USER_NAME"):$(getent group "$GROUP_NAME" | cut -d: -f3)"
+echo "  config mount:      /etc/science-assistant -> /etc/science-assistant (read-only)"
+echo "  data mount:        /var/science-assistant -> /var/science-assistant (read-write)"
+echo "  log mount:         /var/log/science-assistant -> /var/log/science-assistant (read-write)"
+echo "  port mapping:      0.0.0.0:${HOST_PORT} -> ${CONTAINER_PORT}/tcp"
+echo "  advertised URL:    https://172.18.0.1:${HOST_PORT}"
+echo "  docker network:    ${SCIENCE_ASSISTANT_NETWORK:-smart-assistant}"
+echo "  container:         ${CONTAINER}"
+for p in /etc/science-assistant /var/science-assistant/data /var/log/science-assistant; do
+  if [ -e "$p" ]; then stat -c '  path:              %n owner=%U:%G mode=%a' "$p"; fi
+done
+if docker inspect "$CONTAINER" >/dev/null 2>&1; then
+  echo "  container status:  $(docker inspect -f '{{.State.Status}}' "$CONTAINER")"
+  echo "  container PID1:    $(docker top "$CONTAINER" -eo user,group,pid,args | sed -n '2p')"
+  echo "  published ports:   $(docker port "$CONTAINER" 2>/dev/null | tr '\n' ' ')"
+else
+  echo "  container status:  absent"
+fi

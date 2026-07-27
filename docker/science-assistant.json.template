@@ -1,0 +1,65 @@
+{
+  "server": {
+    "host": "0.0.0.0",
+    "port": 18180,
+    "protocol": "https",
+    "servername": "science-assistant",
+    "advertised_host": "172.18.0.1",
+    "debug": false,
+    "log_level": "INFO",
+    "log_dir": "/var/log/science-assistant",
+    "ssl": {
+      "cert": "/etc/science-assistant/mtls/server.crt",
+      "key": "/etc/science-assistant/mtls/server.key",
+      "ca": "/etc/science-assistant/mtls/proxy-ca.crt",
+      "crl": null,
+      "dnscheck": false,
+      "check_hostname": false
+    }
+  },
+  "client": {"enabled": false, "protocol": "https"},
+  "registration": {
+    "enabled": true,
+    "protocol": "https",
+    "register_url": "https://mcp-proxy.techsup.od.ua:3004/register",
+    "unregister_url": "https://mcp-proxy.techsup.od.ua:3004/unregister",
+    "heartbeat_interval": 30,
+    "server_id": "science-assistant-vvz",
+    "server_name": "Science Assistant",
+    "instance_uuid": "REPLACE_ON_INSTALL",
+    "auto_on_startup": true,
+    "auto_on_shutdown": true,
+    "metadata": {
+      "server_id": "science-assistant-vvz",
+      "server_name": "Science Assistant",
+      "description": "Scientific data gateway: astroquery, TAP/ADQL, and HTTP/HTTPS/FTP downloads.",
+      "version": "@VERSION@"
+    },
+    "ssl": {
+      "cert": "/etc/science-assistant/mtls/client.crt",
+      "key": "/etc/science-assistant/mtls/client.key",
+      "ca": "/etc/science-assistant/mtls/registration-ca.crt",
+      "crl": null,
+      "dnscheck": false,
+      "check_hostname": false
+    },
+    "heartbeat": {
+      "url": "https://mcp-proxy.techsup.od.ua:3004/proxy/heartbeat",
+      "interval": 30
+    }
+  },
+  "server_validation": {"enabled": false, "protocol": "https"},
+  "auth": {"use_token": false, "use_roles": false, "tokens": {}, "roles": {}},
+  "queue_manager": {
+    "enabled": true,
+    "in_memory": true,
+    "registry_path": null,
+    "shutdown_timeout": 30.0,
+    "max_concurrent_jobs": 4,
+    "max_queue_size": 100,
+    "per_job_type_limits": null,
+    "completed_job_retention_seconds": 21600
+  },
+  "orchestration": {"discovery_enabled": false, "static_servers": []},
+  "commands": {"auto_discovery": false, "commands_directory": "./commands", "enabled_commands": []}
+}

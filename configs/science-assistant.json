@@ -1,0 +1,103 @@
+{
+  "server": {
+    "host": "0.0.0.0",
+    "port": 18180,
+    "protocol": "https",
+    "servername": "science-assistant",
+    "ssl": {
+      "cert": "/var/casmgr/watch_catalog/550e8400-e29b-41d4-a716-446655440001/scientific_research_large_galaxy_smbh/runtime/certs/science-assistant.crt",
+      "key": "/var/casmgr/watch_catalog/550e8400-e29b-41d4-a716-446655440001/scientific_research_large_galaxy_smbh/runtime/certs/science-assistant.key",
+      "ca": "/var/casmgr/watch_catalog/550e8400-e29b-41d4-a716-446655440001/scientific_research_large_galaxy_smbh/runtime/certs/proxy-ca.crt",
+      "crl": null,
+      "dnscheck": false,
+      "check_hostname": false
+    },
+    "rules": null,
+    "log_dir": "runtime/logs",
+    "debug": false,
+    "log_level": "INFO",
+    "advertised_host": "172.18.0.1"
+  },
+  "client": {
+    "enabled": false,
+    "protocol": "http",
+    "ssl": null
+  },
+  "registration": {
+    "enabled": true,
+    "protocol": "https",
+    "register_url": "https://mcp-proxy.techsup.od.ua:3004/register",
+    "unregister_url": "https://mcp-proxy.techsup.od.ua:3004/unregister",
+    "heartbeat_interval": 30,
+    "ssl": {
+      "cert": "/var/casmgr/watch_catalog/550e8400-e29b-41d4-a716-446655440001/scientific_research_large_galaxy_smbh/runtime/certs/registration-client.crt",
+      "key": "/var/casmgr/watch_catalog/550e8400-e29b-41d4-a716-446655440001/scientific_research_large_galaxy_smbh/runtime/certs/registration-client.key",
+      "ca": "/var/casmgr/watch_catalog/550e8400-e29b-41d4-a716-446655440001/scientific_research_large_galaxy_smbh/runtime/certs/registration-ca.crt",
+      "crl": null,
+      "dnscheck": false,
+      "check_hostname": false
+    },
+    "server_id": "science-assistant-vvz",
+    "server_name": "Science Assistant",
+    "instance_uuid": "0151212d-c3a1-42c0-b171-9b15a45e19b5",
+    "auto_on_startup": true,
+    "auto_on_shutdown": true,
+    "metadata": {
+      "server_id": "science-assistant-vvz",
+      "server_name": "Science Assistant",
+      "description": "Scientific research server for reproducible cosmology and large-galaxy SMBH studies.",
+      "version": "0.1.0"
+    },
+    "heartbeat": {
+      "url": "https://mcp-proxy.techsup.od.ua:3004/proxy/heartbeat",
+      "interval": 30
+    }
+  },
+  "server_validation": {
+    "enabled": false,
+    "protocol": "http",
+    "ssl": null,
+    "timeout": 10,
+    "use_token": false,
+    "use_roles": false,
+    "tokens": {},
+    "roles": {},
+    "auth_header": "X-API-Key",
+    "roles_header": "X-Roles",
+    "health_path": "/health",
+    "check_hostname": false
+  },
+  "auth": {
+    "use_token": false,
+    "use_roles": false,
+    "tokens": {},
+    "roles": {}
+  },
+  "queue_manager": {
+    "enabled": false,
+    "in_memory": true,
+    "registry_path": null,
+    "shutdown_timeout": 30.0,
+    "max_concurrent_jobs": 10,
+    "max_queue_size": null,
+    "per_job_type_limits": null,
+    "completed_job_retention_seconds": 21600,
+    "default_poll_interval": 0.0,
+    "default_max_wait_time": null,
+    "command_timeout": null,
+    "stop_job_wait_timeout": null
+  },
+  "orchestration": {
+    "discovery_enabled": false,
+    "polling_interval": 30.0,
+    "initial_poll_timeout": 60.0,
+    "stale_snapshot_behavior": "keep",
+    "mutex_lock_timeout": 5.0,
+    "static_servers": []
+  },
+  "commands": {
+    "auto_discovery": false,
+    "commands_directory": "./commands",
+    "enabled_commands": []
+  }
+}

@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "science-assistant-client"
+dynamic = ["version"]
+description = "High-level MCP Proxy client for Science Assistant"
+readme = "README.md"
+requires-python = ">=3.10"
+authors = [{name = "Vasiliy Zdanovskiy", email = "vasilyvz@gmail.com"}]
+dependencies = ["mcp-proxy-adapter==8.10.20"]
+
+[project.scripts]
+science-assistant-client = "science_assistant_client.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-asyncio>=0.23"]
+
+[tool.setuptools.dynamic]
+version = {attr = "science_assistant_client.version.__version__"}
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["science_assistant_client*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]

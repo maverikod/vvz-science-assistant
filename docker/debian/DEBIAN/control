@@ -1,0 +1,10 @@
+Package: science-assistant-docker
+Version: @VERSION@
+Architecture: amd64
+Maintainer: Vasiliy Zdanovskiy <vasilyvz@gmail.com>
+Section: science
+Priority: optional
+Depends: docker.io | docker-ce, adduser, ca-certificates, curl, openssl, python3, systemd
+Description: Science Assistant MCP scientific data gateway
+ Installs the Docker-managed Science Assistant service, system user scasuser,
+ persistent config/data/log directories, HTTPS configuration, and host utilities.

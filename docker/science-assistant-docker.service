@@ -1,0 +1,16 @@
+[Unit]
+Description=Science Assistant Docker MCP server
+After=docker.service network-online.target
+Wants=network-online.target
+Requires=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStartPre=-/bin/sh -c 'docker network inspect smart-assistant >/dev/null 2>&1 || docker network create smart-assistant'
+ExecStart=/usr/lib/science-assistant/docker-run.sh recreate
+ExecStop=/usr/lib/science-assistant/docker-run.sh stop
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target
