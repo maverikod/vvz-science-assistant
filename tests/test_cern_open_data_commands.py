@@ -244,3 +244,12 @@ async def test_search_command_delivers_json_and_manifest_to_project(
         params={"q": "muon", "page": 1, "size": 1},
         timeout_seconds=120.0,
     )
+
+
+def test_download_command_requires_queue_execution() -> None:
+    """CERN binary acquisition cannot execute through the synchronous MCP path."""
+    assert commands.CernOpenDataDownloadCommand.use_queue is True
+    assert commands.CernOpenDataDownloadCommand.get_schema()["x-use-queue"] is True
+    assert commands.CernOpenDataSearchCommand.use_queue is False
+    assert commands.CernOpenDataRecordCommand.use_queue is False
+

@@ -433,6 +433,7 @@ class CernOpenDataDownloadCommand(Command):
     author: ClassVar[str] = _AUTHOR
     email: ClassVar[str] = _EMAIL
     result_class: ClassVar[type[CommandResult]] = CommandResult
+    use_queue: ClassVar[bool] = True
 
     @classmethod
     def get_schema(cls) -> dict[str, Any]:
@@ -443,6 +444,7 @@ class CernOpenDataDownloadCommand(Command):
         """
         return {
             "type": "object",
+            "x-use-queue": True,
             "properties": {
                 "project_id": _project_property(),
                 "record_id": {"type": "integer", "minimum": 1},
