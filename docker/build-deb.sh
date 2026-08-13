@@ -3,6 +3,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 VERSION="$(python3 -c 'import re,pathlib; print(re.search(r"^version\s*=\s*\"([^\"]+)\"", pathlib.Path("pyproject.toml").read_text(), re.M).group(1))')"
+ADAPTER_PIN="$(python3 -c 'import re,pathlib; print(re.search(r"\"mcp-proxy-adapter==([^\"]+)\"", pathlib.Path("client/pyproject.toml").read_text()).group(1))')"
 STAGE="$(mktemp -d)"
 trap 'rm -rf "$STAGE"' EXIT
 cp -a docker/debian/. "$STAGE/"
@@ -12,7 +13,7 @@ install -m 0755 docker/ensure-mtls-certificates.sh "$STAGE/usr/lib/science-assis
 install -m 0755 docker/science-assistant-info "$STAGE/usr/bin/science-assistant-info"
 install -m 0644 docker/science-assistant-docker.service "$STAGE/lib/systemd/system/science-assistant-docker.service"
 install -m 0644 "dist/client-release/wheels/science_assistant_client-${VERSION}-py3-none-any.whl" "$STAGE/usr/share/science-assistant/client/"
-install -m 0644 "dist/client-release/wheels/mcp_proxy_adapter-8.10.20-py3-none-any.whl" "$STAGE/usr/share/science-assistant/client/"
+install -m 0644 "dist/client-release/wheels/mcp_proxy_adapter-${ADAPTER_PIN}-py3-none-any.whl" "$STAGE/usr/share/science-assistant/client/"
 install -m 0644 "dist/science-assistant-client-offline-${VERSION}.zip" "$STAGE/usr/share/science-assistant/client/"
 install -m 0644 "dist/science-assistant-client-portable-${VERSION}.zip" "$STAGE/usr/share/science-assistant/client/"
 install -m 0644 "dist/science-assistant-client-py313-linux-x86_64-${VERSION}.zip" "$STAGE/usr/share/science-assistant/client/"
