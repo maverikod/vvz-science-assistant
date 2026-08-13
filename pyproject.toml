@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "science-assistant"
-version = "0.2.19"
+version = "0.2.20"
 description = "MCP scientific data gateway for astroquery, TAP/ADQL, and file downloads"
 readme = "README.md"
 requires-python = ">=3.12"
@@ -22,13 +22,14 @@ dependencies = [
 
 [project.scripts]
 science-assistant-server = "science_assistant.server:main"
+pipeline = "pipeline.cli:main"
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.8", "mypy>=1.8"]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["science_assistant*"]
+include = ["science_assistant*", "pipeline*"]
 
 [tool.setuptools.package-data]
 science_assistant = ["docs/*.md"]

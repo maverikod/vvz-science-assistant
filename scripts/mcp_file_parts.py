@@ -20,7 +20,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Mapping
 
-__version__ = "0.2.19"
+__version__ = "0.2.20"
 DEFAULT_PART_SIZE = 32 * 1024
 MAX_PART_SIZE = 512 * 1024
 

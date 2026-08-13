@@ -1,2 +1,2 @@
 """Generated from the server root pyproject.toml."""
-__version__ = "0.2.19"
+__version__ = "0.2.20"

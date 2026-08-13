@@ -19,6 +19,28 @@ One invocation builds and validates all release artifacts from the single versio
 
 The build synchronizes the client version, installs the client wheel into an isolated environment, executes tests, builds the image and Debian package, and verifies every artifact version. A mismatch fails the build.
 
+## Verification: the pipeline CLI
+
+`pip install -e .` provides the canonical `pipeline` command — the single
+verification entrypoint in every context:
+
+```bash
+pipeline           # run every registered check (unit, version, live-server)
+pipeline --list    # enumerate check names and descriptions
+pipeline <name>    # run exactly one named check
+```
+
+Checks are auto-discovered from `pipeline/checks/` (one check per file).
+Live checks talk to the REAL deployed server over mTLS
+(`https://192.168.254.26:18180` by default, overridable via
+`SCIENCE_ASSISTANT_LIVE_*` environment variables) and FAIL when it is
+unreachable — they never skip. The client mTLS material is expected under
+`runtime/certs/` (`client.crt`, `client.key`, `server.crt`), copied from the
+deploy host's `/etc/science-assistant/mtls/`; it is git-ignored.
+`pipeline live-catalog-coverage` prints the schema-driven coverage ledger,
+naming every declared command and parameter the live checks do not exercise
+yet.
+
 ## Commands
 
 Scientific acquisition:
