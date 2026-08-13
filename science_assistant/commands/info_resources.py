@@ -5,6 +5,7 @@ from __future__ import annotations
 import grp
 import os
 import pwd
+from importlib.metadata import version as distribution_version
 from importlib.resources import files
 from pathlib import Path
 from typing import Any
@@ -106,7 +107,7 @@ def package_info() -> dict[str, str]:
         "client_wheel_relative_path": f"releases/science-assistant-client/science_assistant_client-{version}-py3-none-any.whl",
         "client_archive_relative_path": f"releases/science-assistant-client/science-assistant-client-offline-{version}.zip",
         "client_portable_archive_relative_path": f"releases/science-assistant-client/science-assistant-client-portable-{version}.zip",
-        "adapter_wheel_relative_path": "releases/science-assistant-client/mcp_proxy_adapter-8.10.20-py3-none-any.whl",
+        "adapter_wheel_relative_path": f"releases/science-assistant-client/mcp_proxy_adapter-{distribution_version('mcp-proxy-adapter')}-py3-none-any.whl",
         "client_py313_archive_relative_path": f"releases/science-assistant-client/science-assistant-client-py313-linux-x86_64-{version}.zip",
         "agent_script_version": version,
         "agent_script_relative_path": "releases/science-assistant-agent/mcp_file_parts.py",

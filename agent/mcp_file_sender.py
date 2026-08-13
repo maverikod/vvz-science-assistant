@@ -24,7 +24,7 @@ import uuid
 from pathlib import Path
 from typing import Any, Mapping
 
-__version__ = "0.2.18"
+__version__ = "0.2.19"
 DEFAULT_BASE64_CHARS = 32 * 1024
 DEFAULT_DOWNLOAD_PART_SIZE = 64 * 1024
 MAX_DOWNLOAD_PART_SIZE = 512 * 1024
