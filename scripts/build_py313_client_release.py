@@ -3,6 +3,7 @@
 from __future__ import annotations
 import hashlib
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -11,6 +12,9 @@ from pathlib import Path
 
 root = Path(__file__).resolve().parents[1]
 version = sys.argv[1]
+adapter_pin = re.search(
+    r'"mcp-proxy-adapter==([^"]+)"', (root / "client/pyproject.toml").read_text(encoding="utf-8")
+).group(1)
 release_root = root / "dist/client-py313"
 wheelhouse = release_root / "wheels"
 stage = release_root / "archive"
@@ -30,7 +34,7 @@ cmd = [
     "--platform", "manylinux_2_28_x86_64",
     "--platform", "manylinux2014_x86_64",
     "--platform", "manylinux_2_17_x86_64",
-    "mcp-proxy-adapter==8.10.20",
+    f"mcp-proxy-adapter=={adapter_pin}",
 ]
 subprocess.run(cmd, check=True)
 stage.mkdir(parents=True)
