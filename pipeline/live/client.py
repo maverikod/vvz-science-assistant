@@ -184,6 +184,37 @@ class LiveClient:
                 f"cannot reach {self.endpoint.describe()}: {type(exc).__name__}: {exc}") from exc
         return dict(envelope) if isinstance(envelope, Mapping) else {"result": envelope}
 
+    def call_completed(self, command: str, params: Optional[Mapping[str, Any]] = None,
+                       *, poll_timeout: float = 120.0, poll_interval: float = 2.0) -> Dict[str, Any]:
+        """Call a command and resolve queue indirection to the FINAL envelope.
+
+        Queue-backed commands (``x-use-queue``, or any command whose sync
+        budget is exceeded) reply with ``{"job_id", "poll_with"}`` instead of a
+        result. This helper polls ``queue_get_job_status`` until the job
+        completes and returns the INNER command envelope, so callers assert
+        the same shapes for the sync and the queued path. A job that does not
+        finish within ``poll_timeout`` raises :class:`LiveServerUnavailable`
+        (a RED check), because a stuck queue on our own server is a defect.
+        """
+        import time
+        envelope = self.call(command, params)
+        job_id = envelope.get("result", {}).get("job_id") if isinstance(envelope.get("result"), Mapping) else None
+        if not job_id:
+            return envelope
+        deadline = time.monotonic() + poll_timeout
+        while time.monotonic() < deadline:
+            status_envelope = self.call("queue_get_job_status", {"job_id": job_id})
+            data = data_of(status_envelope)
+            if data.get("status") in ("completed", "failed", "error"):
+                inner = data.get("result", {})
+                inner = inner.get("result") if isinstance(inner, Mapping) else None
+                if isinstance(inner, Mapping):
+                    return {"result": dict(inner), "job_id": job_id}
+                return {"result": {"success": False, "error": {"code": "QUEUE_RESULT_MISSING",
+                        "message": f"job {job_id} finished without an inner result"}}, "job_id": job_id}
+            time.sleep(poll_interval)
+        raise LiveServerUnavailable(f"queued {command} job {job_id} did not finish within {poll_timeout}s")
+
     def command_names(self) -> List[str]:
         """Every command name the deployed server advertises through ``help``."""
         commands = data_of(self.call("help", {})).get("commands")
