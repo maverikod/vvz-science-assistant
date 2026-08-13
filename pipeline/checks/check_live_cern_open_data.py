@@ -87,7 +87,8 @@ def _body(client: LiveClient) -> CheckResult:
 
     def case_download_queue_lifecycle() -> str:
         envelope = client.call_completed("cern_open_data_download", {
-            "project_id": PROJECT_ID, "record_id": RECORD_ID, "file_index": 0,
+            "project_id": PROJECT_ID, "record_id": RECORD_ID, "file_name": "BuildFile.xml",
+            "output_name": "pipeline-check-buildfile.xml", "resume": False,
             "max_bytes": 200_000, "timeout_seconds": 60}, poll_timeout=180.0)
         require(envelope.get("job_id"), "download must run through the queue (x-use-queue)")
         require(not is_success(envelope), f"expected the observed xrootd-only failure: {envelope!r}")
@@ -95,8 +96,8 @@ def _body(client: LiveClient) -> CheckResult:
         require(code == "CERN_OPEN_DATA_ERROR", f"code={code!r}, expected 'CERN_OPEN_DATA_ERROR'")
         message = str((data_of(envelope) or {}).get("message", ""))
         require("no HTTP download URL" in message, f"message={message!r}")
-        return ("queued download completed through the full job lifecycle and returned the "
-                "observed CERN_OPEN_DATA_ERROR: record files expose only root:// URIs")
+        return ("queued download selected the file BY NAME through the full job lifecycle and "
+                "returned the observed CERN_OPEN_DATA_ERROR: record files expose only root:// URIs")
 
     def case_unknown_project_rejected() -> str:
         envelope = client.call("cern_open_data_search", {
@@ -107,7 +108,7 @@ def _body(client: LiveClient) -> CheckResult:
 
     def case_wrong_typed_record_id_in_queue() -> str:
         envelope = client.call_completed("cern_open_data_download", {
-            "project_id": PROJECT_ID, "record_id": "bogus"}, poll_timeout=120.0)
+            "project_id": PROJECT_ID, "record_id": "bogus", "file_index": 0}, poll_timeout=120.0)
         require(error_code(envelope) == -32602,
                 f"code={error_code(envelope)!r}, expected in-queue -32602")
         return "wrong-typed record_id validated INSIDE the job and rejected with -32602"

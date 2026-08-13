@@ -80,12 +80,36 @@ def _body(client: LiveClient) -> CheckResult:
         data = _assert_dataset_reply(envelope, "astroquery_object[cone]")
         return f"SIMBAD cone query persisted as {data['dataset_relative_path']}"
 
+    def case_vizier_cone_with_catalog_and_columns() -> str:
+        envelope = client.call_completed("astroquery_object", {
+            "service": "vizier", "ra_deg": 10.68, "dec_deg": 41.27, "radius_arcmin": 2.0,
+            "catalog": "I/355/gaiadr3", "columns": ["RA_ICRS", "DE_ICRS", "Gmag"],
+            "row_limit": 3, "dataset_name": "pipeline-check-vizier-cone"})
+        data = _assert_dataset_reply(envelope, "astroquery_object[vizier]")
+        return f"VizieR cone with explicit catalog and columns persisted as {data['dataset_relative_path']}"
+
     def case_gaia_adql() -> str:
         envelope = client.call_completed("astroquery_adql", {
             "service": "gaia", "query": "SELECT TOP 1 source_id FROM gaiadr3.gaia_source",
             "output_format": "ecsv", "dataset_name": "pipeline-check-gaia"})
         data = _assert_dataset_reply(envelope, "astroquery_adql")
         return f"Gaia ADQL persisted as {data['dataset_relative_path']}"
+
+    def case_custom_tap_adql() -> str:
+        envelope = client.call_completed("astroquery_adql", {
+            "service": "custom", "tap_url": "https://tapvizier.cds.unistra.fr/TAPVizieR/tap",
+            "query": "SELECT TOP 1 table_name FROM TAP_SCHEMA.tables",
+            "dataset_name": "pipeline-check-custom-tap"})
+        data = _assert_dataset_reply(envelope, "astroquery_adql[custom]")
+        return f"custom TAP endpoint (VizieR TAP) persisted as {data['dataset_relative_path']}"
+
+    def case_custom_tap_requires_tap_url() -> str:
+        envelope = client.call("astroquery_adql", {"service": "custom", "query": "SELECT 1"})
+        require(error_code(envelope) == "VALIDATION_ERROR",
+                f"code={error_code(envelope)!r}, expected 'VALIDATION_ERROR'")
+        require(data_of(envelope).get("field") == "tap_url",
+                f"field={data_of(envelope).get('field')!r}, expected 'tap_url'")
+        return "service=custom without tap_url rejected with VALIDATION_ERROR naming the field"
 
     def case_service_enum_rejected() -> str:
         envelope = client.call("astroquery_object", {"service": "SIMBAD", "target": "M31"})
@@ -101,7 +125,10 @@ def _body(client: LiveClient) -> CheckResult:
         ("vizier_catalog", case_vizier_catalog),
         ("simbad_object_by_name", case_simbad_object_by_name),
         ("simbad_object_by_cone", case_simbad_object_by_cone),
+        ("vizier_cone_with_catalog_and_columns", case_vizier_cone_with_catalog_and_columns),
         ("gaia_adql", case_gaia_adql),
+        ("custom_tap_adql", case_custom_tap_adql),
+        ("custom_tap_requires_tap_url", case_custom_tap_requires_tap_url),
         ("service_enum_rejected", case_service_enum_rejected),
         ("missing_required_rejected", case_missing_required_rejected),
     )]
