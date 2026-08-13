@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "science-assistant"
-version = "0.2.17"
+version = "0.2.18"
 description = "MCP scientific data gateway for astroquery, TAP/ADQL, and file downloads"
 readme = "README.md"
 requires-python = ">=3.12"
