@@ -4,13 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "science-assistant"
-version = "0.2.23"
+version = "0.2.27"
 description = "MCP scientific data gateway for astroquery, TAP/ADQL, and file downloads"
 readme = "README.md"
 requires-python = ">=3.12"
 authors = [{name = "Vasiliy Zdanovskiy", email = "vasilyvz@gmail.com"}]
 dependencies = [
-  "mcp-proxy-adapter>=8.10.26,<9",
+  "mcp-proxy-adapter>=8.10.28,<9",
   "astroquery>=0.4.11,<0.5",
   "astropy>=7,<8",
   "pyvo>=1.9,<2",

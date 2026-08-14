@@ -1,4 +1,4 @@
-mcp-proxy-adapter>=8.10.26,<9
+mcp-proxy-adapter>=8.10.28,<9
 astroquery>=0.4.11,<0.5
 astropy>=7,<8
 pyvo>=1.9,<2

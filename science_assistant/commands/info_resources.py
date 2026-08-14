@@ -22,6 +22,31 @@ def guide_markdown() -> str:
     return files("science_assistant").joinpath("docs").joinpath("INFO.md").read_text(encoding="utf-8")
 
 
+def _user_name(uid: int) -> str | None:
+    """Resolve a uid to a username; None if negative or absent from NSS.
+
+    The container runs with a numeric --user uid:gid (see docker/docker-run.sh)
+    with no matching /etc/passwd entry baked in, so a plain pwd.getpwuid() call
+    raises KeyError in normal operation. That is not an error condition here.
+    """
+    if uid < 0:
+        return None
+    try:
+        return pwd.getpwuid(uid).pw_name
+    except KeyError:
+        return None
+
+
+def _group_name(gid: int) -> str | None:
+    """Resolve a gid to a group name; None if negative or absent from NSS."""
+    if gid < 0:
+        return None
+    try:
+        return grp.getgrgid(gid).gr_name
+    except KeyError:
+        return None
+
+
 def _path_info(path: Path) -> dict[str, Any]:
     result: dict[str, Any] = {"path": str(path), "exists": path.exists()}
     if not path.exists():
@@ -30,8 +55,8 @@ def _path_info(path: Path) -> dict[str, Any]:
     result.update({
         "uid": stat.st_uid,
         "gid": stat.st_gid,
-        "user": pwd.getpwuid(stat.st_uid).pw_name if stat.st_uid >= 0 else None,
-        "group": grp.getgrgid(stat.st_gid).gr_name if stat.st_gid >= 0 else None,
+        "user": _user_name(stat.st_uid),
+        "group": _group_name(stat.st_gid),
         "mode": oct(stat.st_mode & 0o7777),
     })
     return result
@@ -42,8 +67,17 @@ def runtime_info() -> dict[str, Any]:
     server = cfg.get("server", {}) if isinstance(cfg, dict) else {}
     registration = cfg.get("registration", {}) if isinstance(cfg, dict) else {}
     uid, gid = os.getuid(), os.getgid()
-    user = pwd.getpwuid(uid).pw_name
-    group = grp.getgrgid(gid).gr_name
+    # docker/docker-run.sh starts the container with `docker run --user
+    # <uid>:<gid>` where uid/gid are resolved from the host's SCIENCE_ASSISTANT_USER
+    # /GROUP at the moment the container is created; there is no matching
+    # /etc/passwd or /etc/group entry baked into the image (creating one needs
+    # root, which the container no longer has -- see docker/entrypoint.sh). NSS
+    # lookup is tried first and is authoritative when it succeeds; the env vars
+    # docker-run.sh passed alongside that same uid/gid are the fallback, not a
+    # guess -- they are the single source of truth docker-run.sh itself used to
+    # pick the uid/gid the container is actually running as.
+    user = _user_name(uid) or os.environ.get("SCIENCE_ASSISTANT_USER")
+    group = _group_name(gid) or os.environ.get("SCIENCE_ASSISTANT_GROUP")
     internal_port = int(server.get("port", 18180))
     host_port = int(os.environ.get("SCIENCE_ASSISTANT_HOST_PORT", internal_port))
     advertised_host = str(server.get("advertised_host", ""))

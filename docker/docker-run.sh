@@ -20,10 +20,14 @@ start_container() {
     --restart unless-stopped \
     --network "$NETWORK" \
     --add-host mcp-proxy.techsup.od.ua:172.18.0.1 \
+    --user "${UID_VALUE}:${GID_VALUE}" \
     -e SCIENCE_ASSISTANT_USER="$USER_NAME" \
     -e SCIENCE_ASSISTANT_GROUP="$GROUP_NAME" \
     -e SCAS_UID="$UID_VALUE" \
     -e SCAS_GID="$GID_VALUE" \
+    -e HOME=/var/science-assistant/home \
+    -e USER="$USER_NAME" \
+    -e LOGNAME="$USER_NAME" \
     -e SCIENCE_ASSISTANT_HOST_PORT="$HOST_PORT" \
     -p "0.0.0.0:${HOST_PORT}:${CONTAINER_PORT}" \
     -v "${CONFIG_DIR}:${CONFIG_DIR}:ro" \

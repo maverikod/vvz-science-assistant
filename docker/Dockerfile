@@ -1,6 +1,21 @@
 FROM python:3.12-slim-bookworm
 
 ARG VERSION=dev
+# The uid:gid docker/docker-run.sh's `--user` currently resolves the host's
+# postinst-created scasuser/scasgrp to (see docker/debian/DEBIAN/postinst and
+# `id -u scasuser` / `getent group scasgrp` on the deploy host). Baking a
+# matching /etc/passwd and /etc/group entry here lets the packaging-standard
+# identity check (`info` -> runtime.process.user) resolve the real name
+# through NSS instead of only the SCIENCE_ASSISTANT_USER/GROUP env-var
+# fallback in science_assistant/commands/info_resources.py. `adduser --system`
+# assigns uids dynamically, so a *different* host's scasuser could land on a
+# different uid:gid than the defaults below; if so, NSS lookup simply misses
+# and that code fallback still resolves the name correctly -- this is defense
+# in depth, not a hard dependency. Override at build time with
+# `--build-arg SCAS_UID=<uid> --build-arg SCAS_GID=<gid>` to match a
+# different host.
+ARG SCAS_UID=134
+ARG SCAS_GID=138
 LABEL org.opencontainers.image.title="science-assistant" \
       org.opencontainers.image.version="${VERSION}" \
       org.opencontainers.image.description="Science Assistant MCP scientific data gateway"
@@ -18,6 +33,9 @@ ENV DEBIAN_FRONTEND=noninteractive \
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates curl gosu \
     && rm -rf /var/lib/apt/lists/*
+
+RUN groupadd -g "${SCAS_GID}" scasgrp \
+    && useradd -u "${SCAS_UID}" -g scasgrp -d /var/science-assistant/home -s /usr/sbin/nologin -M scasuser
 
 WORKDIR /app
 COPY pyproject.toml README.md MANIFEST.in ./
